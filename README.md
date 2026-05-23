@@ -16,12 +16,12 @@ Show the vocabulary mismatch problem concretely, then fix it:
 
 ## Approach
 
-- [ ] Step 1 — BM25 from scratch: implement term frequency, IDF, and BM25 scoring
-- [ ] Step 2 — Vocabulary mismatch demo: show where pure vector fails, where BM25 fails
-- [ ] Step 3 — Hybrid (RRF): combine rankings using Reciprocal Rank Fusion
-- [ ] Step 4 — Hybrid (weighted): combine scores using α·vector + (1−α)·BM25
-- [ ] Step 5 — Benchmark: vocabulary mismatch queries vs semantic queries across all three
-- [ ] Step 6 — Failure analysis: what does hybrid still miss?
+- [x] Step 1 — BM25 from scratch: implement term frequency, IDF, and BM25 scoring
+- [x] Step 2 — Vocabulary mismatch demo: show where pure vector fails, where BM25 fails
+- [x] Step 3 — Hybrid (RRF): combine rankings using Reciprocal Rank Fusion
+- [x] Step 4 — Hybrid (weighted): combine scores using α·vector + (1−α)·BM25
+- [x] Step 5 — Benchmark: vocabulary mismatch queries vs semantic queries across all three
+- [x] Step 6 — Failure analysis: what does hybrid still miss?
 
 ## Setup
 
@@ -39,4 +39,17 @@ python src/main.py
 
 ## Results
 
-See `notes.md` for the running log.
+| Query | BM25 | Vector | RRF | Weighted |
+|---|---|---|---|---|
+| what is khadi | ✅ | ✅ | ✅ | ✅ |
+| Gandhian textile | ❌ zero | ❌ Banarasi | ❌ Banarasi | ❌ Banarasi |
+| cloth from freedom movement | ❌ | ❌ | ✅ | ✅ |
+| breathable artisanal fabric | ✅ | ✅ | ✅ | ✅ |
+| sherwani for wedding | ❌ | ✅ | ✅ | ✅ |
+| Mughal era garment | ✅ | ✅ | ✅ | ✅ |
+| fabric for summer | ❌ | ✅ | ❌ | ❌ |
+| what is bandhgala | ❌ | ❌ | ❌ | ❌ |
+
+Weighted hybrid is the most consistent. Remaining failures require query expansion (vocabulary mismatch) or re-ranking (BM25 false positives).
+
+See `notes.md` for the full session log and failure analysis.
