@@ -11,41 +11,51 @@ CORPUS_PATH = "data/sample.txt"
 TOP_K = 14
 ALPHA = 0.5
 
-QUERIES = [
-    ("exact match",           "what is khadi"),
-    ("synonym — BM25 gap",    "Gandhian textile"),
-    ("paraphrase — both gap", "cloth from freedom movement"),
-    ("exact words",           "breathable artisanal fabric"),
-]
+
+def build_all(text: str):
+    chunks = recursive_chunks(text)
+    print("Embedding chunks (one-time)...")
+    embeddings = embed_chunks(chunks)
+    bm25 = BM25(chunks)
+    print(f"Ready. {len(chunks)} chunks  alpha={ALPHA}\n")
+    return chunks, embeddings, bm25
 
 
-def run_comparison(query: str, label: str, bm25: BM25, chunks: list, embeddings: list) -> None:
-    print(f"\n{'=' * 60}")
-    print(f"[{label}]  Query: '{query}'")
-    print("=" * 60)
-
+def query_all(query: str, chunks: list, embeddings: list, bm25: BM25) -> None:
     bm25_results = bm25.score(query)[:TOP_K]
     vec_results = vector_search(query, chunks, embeddings, top_k=TOP_K)
     rrf_results = reciprocal_rank_fusion([bm25_results, vec_results])
     weighted_results = weighted_hybrid(bm25_results, vec_results, alpha=ALPHA)
 
-    print(f"\nBM25      score={bm25_results[0][1]:.4f}  →  {bm25_results[0][0][:80]}")
-    print(f"VECTOR    score={vec_results[0][1]:.4f}  →  {vec_results[0][0][:80]}")
-    print(f"RRF       score={rrf_results[0][1]:.4f}  →  {rrf_results[0][0][:80]}")
-    print(f"WEIGHTED  score={weighted_results[0][1]:.4f}  →  {weighted_results[0][0][:80]}")
+    print(f"\n{'=' * 60}")
+    print(f"Query: '{query}'")
+    print("=" * 60)
+
+    for label, results in [
+        ("BM25    ", bm25_results),
+        ("VECTOR  ", vec_results),
+        ("RRF     ", rrf_results),
+        ("WEIGHTED", weighted_results),
+    ]:
+        chunk, score = results[0]
+        print(f"\n{label}  score={score:.4f}")
+        print(chunk)
 
 
 def main() -> None:
     text = load_corpus(CORPUS_PATH)
-    chunks = recursive_chunks(text)
+    chunks, embeddings, bm25 = build_all(text)
 
-    print("Embedding chunks (one-time)...")
-    embeddings = embed_chunks(chunks)
-    bm25 = BM25(chunks)
-    print(f"Ready. {len(chunks)} chunks  alpha={ALPHA}\n")
-
-    for label, query in QUERIES:
-        run_comparison(query, label, bm25, chunks, embeddings)
+    print("Type a query (or 'quit' to exit).\n")
+    while True:
+        try:
+            query = input("query> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            break
+        if not query or query.lower() == "quit":
+            break
+        query_all(query, chunks, embeddings, bm25)
+        print()
 
 
 if __name__ == "__main__":
