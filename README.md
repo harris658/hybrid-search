@@ -2,6 +2,17 @@
 
 > Combine BM25 (keyword) and vector (semantic) retrieval to fix the vocabulary mismatch problem that pure vector search cannot solve.
 
+## Showcase
+
+- **What this proves:** I can implement BM25 from scratch and fuse keyword + vector retrieval two different ways.
+- **Headline result:** BM25 + vector via RRF and a weighted blend; weighted (α=0.65) was the most consistent retriever across 8 vocab-mismatch / semantic queries, and exposed exactly where each signal fails alone.
+- **Demo:** `python src/main.py`
+
+## Concepts practiced
+
+- [BM25 & hybrid search](../../concepts/bm25-and-hybrid-search.md)
+- [Embeddings & cosine similarity](../../concepts/embeddings-and-cosine-similarity.md)
+
 ## Source
 
 - **Wiki page:** `concepts/retrieval-spectrum` — Level 1 (keyword) + Level 2 (semantic) + hybrid variant
